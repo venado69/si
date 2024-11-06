@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Joyería</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
+        .product { border: 1px solid #ddd; padding: 15px; margin: 10px; width: 200px; text-align: center; }
+        .price { font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Tienda de Joyería</h1>
+    <div id="productos">Cargando productos...</div>
+
+    <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5G_edpL3E2aqb2HeCr9dHIqGUlrYJ47EofMMgI0RDFj2UkuKoqd4OrQol7MuorQ/pub?gid=1211004432&single=true&output=csv';
+
+        async function cargarProductos() {
+            try {
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error('No se pudo obtener los datos del archivo CSV.');
+
+                const data = await response.text();
+                const rows = data.split('\n');
+                const productos = rows.slice(1).map(row => {
+                    const [id, nombre, calidad, precio] = row.split(',');
+                    return { id, nombre, calidad, precio: parseFloat(precio) };
+                });
+
+                const contenedor = document.getElementById('productos');
+                contenedor.innerHTML = '';
+
+                if (productos.length === 0) {
+                    contenedor.innerHTML = 'No se encontraron productos.';
+                } else {
+                    productos.forEach(producto => {
+                        const productDiv = document.createElement('div');
+                        productDiv.classList.add('product');
+                        productDiv.innerHTML = `
+                            <h2>${producto.nombre}</h2>
+                            <p>${producto.calidad}</p>
+                            <p class="price">$${producto.precio}</p>
+                        `;
+                        contenedor.appendChild(productDiv);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('productos').textContent = 'Error al cargar productos.';
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar los productos al iniciar la página
+        cargarProductos();
+    </script>
+</body>
+</html>
